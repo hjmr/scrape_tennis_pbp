@@ -10,28 +10,35 @@ import pandas as pd
 import utils
 
 
-def retrieve_match_data(match):
-    pointlog_str = "var pointlog = '"
+def retrieve_data_by_name(match_name):
     df = None
     res = requests.get(utils.base_url)
     soup = BeautifulSoup(res.text.encode(res.encoding), "html.parser")
-    a_link = soup.find("a", text=match)
+    a_link = soup.find("a", text=match_name)
     if a_link is not None:
-        match_url = utils.base_url + a_link["href"]
-        res = requests.get(match_url)
-        # pointlog の table 部分を抽出
-        res_line = [s for s in res.text.split("\n") if s.startswith(pointlog_str)]
-        if len(res_line) == 1:
-            text = res_line[0][len(pointlog_str):-2]
+        df = retrieve_data_by_href(a_link["href"])
+    return df
 
-            # pointlog の table 部分をパース
-            soup = BeautifulSoup(text, "html.parser")
-            cols = [th.get_text().strip() for th in soup.find_all("th")]
-            cols[4] = "description"  # 4列目のタイトルが空なので適当につける
-            content = [td.get_text().strip() for td in soup.find_all("td")]
-            content = np.array(content).reshape(-1, len(cols))
-            content = content[np.any(content != '', axis=1), :]  # 空行を削除
-            df = pd.DataFrame(content, columns=cols)
+
+def retrieve_data_by_href(match_href):
+    df = None
+    pointlog_str = "var pointlog = '"
+    match_url = utils.base_url + match_href
+    res = requests.get(match_url)
+
+    # pointlog の table 部分を抽出
+    res_line = [s for s in res.text.split("\n") if s.startswith(pointlog_str)]
+    if len(res_line) == 1:
+        text = res_line[0][len(pointlog_str):-2]
+
+        # pointlog の table 部分をパース
+        soup = BeautifulSoup(text, "html.parser")
+        cols = [th.get_text().strip() for th in soup.find_all("th")]
+        cols[4] = "description"  # 4列目のタイトルが空なので適当につける
+        content = [td.get_text().strip() for td in soup.find_all("td")]
+        content = np.array(content).reshape(-1, len(cols))
+        content = content[np.any(content != '', axis=1), :]  # 空行を削除
+        df = pd.DataFrame(content, columns=cols)
     return df
 
 
@@ -49,7 +56,12 @@ def split_description(text):
 
 
 def get_match_data(match):
-    df = retrieve_match_data(match)
+    df = None
+    if match.endswith("html"):
+        df = retrieve_data_by_href(match)
+    else:
+        df = retrieve_data_by_name(match)
+
     for idx in range(len(df)):
         row = df.iloc[idx]
         row["description"] = split_description(row["description"])
