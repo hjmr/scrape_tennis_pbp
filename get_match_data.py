@@ -1,5 +1,6 @@
 import re
 import argparse
+import copy
 
 import requests
 from bs4 import BeautifulSoup
@@ -33,26 +34,32 @@ def retrieve_data_by_href(match_href):
 
         # pointlog の table 部分をパース
         soup = BeautifulSoup(text, "html.parser")
+
         cols = [th.get_text().strip() for th in soup.find_all("th")]
-        cols[4] = "description"  # 4列目のタイトルが空なので適当につける
+        cols[4] = "Description"  # 4列目のタイトルが空なので適当につける
+
         content = [td.get_text().strip() for td in soup.find_all("td")]
         content = np.array(content).reshape(-1, len(cols))
         content = content[np.any(content != '', axis=1), :]  # 空行を削除
+
         df = pd.DataFrame(content, columns=cols)
     return df
 
 
 def split_description(text):
-    result = []
-    text = re.sub(r"\(\d+-shot rally\)", "", text)
+    play_list = []
+    result = None
+    text = re.sub(r"\(\d+-shot rally\)", "", text)  # ラリー数の記述を消去
     paragraphs = [s.strip() for s in text.split(".") if 0 < len(s.strip())]
     for par in paragraphs:
+        if "," in par:
+            par, *_, result = par.split(",")
         terms = [s.strip() for s in par.split(";") if 0 < len(s.strip())]
         if 1 < len(terms):
-            result.extend([[x, y] for x, y in zip(terms[0:len(terms)-1], terms[1:len(terms)])])
+            play_list.extend([[x, y] for x, y in zip(terms[0:len(terms)-1], terms[1:len(terms)])])
         else:
-            result.append(terms)
-    return result
+            play_list.append(terms)
+    return play_list, result
 
 
 def get_match_data(match):
@@ -62,9 +69,13 @@ def get_match_data(match):
     else:
         df = retrieve_data_by_name(match)
 
+    result = []
     for idx in range(len(df)):
         row = df.iloc[idx]
-        row["description"] = split_description(row["description"])
+        d, r = split_description(row["Description"])
+        row["Description"] = d
+        result.append(r)
+    df["Result"] = result
     return df
 
 

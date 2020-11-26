@@ -13,7 +13,7 @@ def parse_arg():
 def main():
     args = parse_arg()
     df = pd.read_json(args.FILENAME, orient="index", compression="infer")
-    if 0 <= args.index and args.index < len(df):
+    if -len(df) < args.index and args.index < len(df):
         print(df.iloc[args.index])
     else:
         print("Out of index (max = {})".format(len(df)-1))
