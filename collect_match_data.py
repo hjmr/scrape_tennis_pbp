@@ -54,7 +54,7 @@ def split_description(text):
 
 
 def get_match_data(match):
-    df = get_match_description(MATCH)
+    df = get_match_description(match)
     for idx in range(len(df)):
         row = df.iloc[idx]
         row["description"] = split_description(row["description"])
