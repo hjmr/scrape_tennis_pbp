@@ -13,7 +13,7 @@ def parse_arg():
 
 def main():
     args = parse_arg()
-    print("Retrieving mathes ... ", end="")
+    print("Retrieving matches ... ", end="")
     matches = retrieve_matches()
     print("done.")
     for idx in range(10):
