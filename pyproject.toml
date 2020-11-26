@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "moe_grad"
+version = "0.1.0"
+description = ""
+authors = ["hjmr <2620990+hjmr@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+beautifulsoup4 = "^4.9.3"
+pandas = "^1.1.4"
+requests = "^2.25.0"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.6.0"
+autopep8 = "^1.5.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
