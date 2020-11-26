@@ -7,22 +7,17 @@ from bs4 import BeautifulSoup
 import numpy as np
 import pandas as pd
 
-
-def parse_arg():
-    parser = argparse.ArgumentParser(description="Scrape Tennis Point-by-Point.")
-    parser.add_argument("-d", "--directory", type=str, default=".", help="データを保存するディレクトリ")
-    return parser.parse_args()
+import utils
 
 
-def get_match_description(match):
-    base_url = "http://www.tennisabstract.com/charting/"
+def retrieve_match_data(match):
     pointlog_str = "var pointlog = '"
     df = None
-    res = requests.get(base_url)
+    res = requests.get(utils.base_url)
     soup = BeautifulSoup(res.text.encode(res.encoding), "html.parser")
     a_link = soup.find("a", text=match)
     if a_link is not None:
-        match_url = base_url + a_link["href"]
+        match_url = utils.base_url + a_link["href"]
         res = requests.get(match_url)
         # pointlog の table 部分を抽出
         res_line = [s for s in res.text.split("\n") if s.startswith(pointlog_str)]
@@ -54,24 +49,22 @@ def split_description(text):
 
 
 def get_match_data(match):
-    df = get_match_description(match)
+    df = retrieve_match_data(match)
     for idx in range(len(df)):
         row = df.iloc[idx]
         row["description"] = split_description(row["description"])
     return df
 
 
-def convert_to_safe_filename(text):
-    return text.translate(str.maketrans(": ", "__"))
-
-
-def main(directory):
-    MATCH = "2020-11-22 Tour Finals F: Daniil Medvedev vs Dominic Thiem (ATP)"
-    df = get_match_data(MATCH)
-    filename = convert_to_safe_filename(MATCH)
-    df.to_json(f"{directory}/{filename}", force_ascii=False, orient="index")
+def parse_arg():
+    parser = argparse.ArgumentParser(description="Scrape Tennis Point-by-Point.")
+    parser.add_argument("-d", "--directory", type=str, default=".", help="データを保存するディレクトリ")
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
+    MATCH = "2020-11-22 Tour Finals F: Daniil Medvedev vs Dominic Thiem (ATP)"
     args = parse_arg()
-    main(args.directory)
+    df = get_match_data(MATCH)
+    fn = utils.convert_to_safe_filename(MATCH)
+    utils.save_match_data(df, args.directory, fn)
