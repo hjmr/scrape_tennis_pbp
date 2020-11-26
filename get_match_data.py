@@ -48,7 +48,7 @@ def retrieve_data_by_href(match_href):
 
 def split_description(text):
     play_list = []
-    result = None
+    result = "Unknown"
     text = re.sub(r"\(\d+-shot rally\)", "", text)  # ラリー数の記述を消去
     paragraphs = [s.strip() for s in text.split(".") if 0 < len(s.strip())]
     for par in paragraphs:
