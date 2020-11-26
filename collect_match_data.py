@@ -13,11 +13,10 @@ def parse_arg():
 
 def main():
     args = parse_arg()
-    print("Retrieving matches ... ", end="")
+    print("Retrieving matches ... ", flush=True, end="")
     matches = retrieve_matches()
     print("done.")
-    for idx in range(10):
-        match_name, match_href = matches[idx]
+    for match_name, match_href in matches:
         print("{} .".format(match_name), end="")
         data = get_match_data(match_href)
         print(".", end="")
