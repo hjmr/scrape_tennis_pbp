@@ -20,16 +20,18 @@ if __name__ == "__main__":
         df = pd.read_json(f, orient="index", compression="infer")
         sum_up = sum_up_single_data(df)
         for player in sum_up:
-            if player not in data:
-                data[player] = {}
             dic = sum_up[player]
-            for k in dic:
-                if k not in data[player]:
-                    data[player][k] = 0
-                data[player][k] += dic[k]
+            for win_lose in dic:
+                tag = "{}-{}".format(player, win_lose)
+                if tag not in data:
+                    data[tag] = {}
+                for k in dic[win_lose]:
+                    if k not in data[tag]:
+                        data[tag][k] = 0
+                    data[tag][k] += dic[win_lose][k]
 
     df = pd.DataFrame(data.values(), index=data.keys()).fillna(0.0)
     if args.csvfile is not None:
         df.to_csv(args.csvfile)
     else:
-        print(len(df.columns))
+        print(len(df), len(df.columns))
