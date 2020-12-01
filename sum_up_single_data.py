@@ -24,7 +24,7 @@ def sum_up_single_data(data):
 
     record = {}
     for p in players:
-        record[p] = {"Points": 0}
+        record[p] = {"Win": 0, "Lose": 0}
 
     for idx in range(len(data)):
         row = data.iloc[idx]
@@ -51,7 +51,8 @@ def sum_up_single_data(data):
         else:
             print("Unexpected result: {}".format(result))
         if 0 <= winner_idx:
-            record[players[winner_idx]]["Points"] += 1
+            record[players[winner_idx]]["Win"] += 1
+            record[players[1-winner_idx]]["Lose"] += 1
 
     return record
 
@@ -62,4 +63,7 @@ if __name__ == "__main__":
     result = sum_up_single_data(df)
 
     for player in result.keys():
-        print("{}: {} ({})".format(player, result[player]["Points"], len(result[player].keys())-1))
+        print("Player:{} - Won:{} Lost:{} ({})".format(player,
+                                                       result[player]["Win"],
+                                                       result[player]["Lose"],
+                                                       len(result[player].keys())-1))
